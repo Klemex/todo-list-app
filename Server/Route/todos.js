@@ -6,13 +6,13 @@ router.get('/todos', (req, res) => {
   res.send('All Todos');
 });
 
-// GET a specific todo by id
+
 router.get('/todos/:id', (req, res) => {
   const id = req.params.id;  // Grab the id parameter from the URL
   res.send(`Getting TODO with id ${id}`);
 });
 
-// POST a new todo
+
 router.post('/todos', (req, res) => {
   const newTodo = {
     id: 1,
@@ -30,9 +30,9 @@ router.put('/todos/:id', (req, res) => {
 
 // DELETE a todo by id
 router.delete('/todos/:id', (req, res) => {
-  const id = req.params.id;  // Grab the id parameter from the URL
+  const id = req.params.id;  
   res.send(`Deleting TODO with id ${id}`);
 });
 
-// Export the router instance
+
 export default router;
