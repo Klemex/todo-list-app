@@ -1,38 +1,66 @@
-import express from 'express';  // Import express
-const router = express.Router(); // Create a router instance
+import express from "express";
+const todosRouter = express.Router();
+import Todo from "../models/todos.js";
 
-// GET all todos
-router.get('/todos', (req, res) => {
-  res.send('All Todos');
+todosRouter.get("/todos/:userId", async (req, res) => {
+    const userId = req.params.userId;
+    const todoId = req.query.id;
+
+    let errorMessage = null;
+
+    try {
+        if (todoId) {
+            const todo = await Todo.findOne({ user: userId, _id: todoId });
+            if (todo) {
+                return res.json(todo);
+            }
+            errorMessage = "Todo not found";
+        } else {
+            const todos = await Todo.find({user: userId});
+            return res.json(todos);
+        }
+    } catch (error) {
+        errorMessage = "Todo not found or invalid id.";
+    }
+
+    res.status(404).json({ error: errorMessage });
 });
 
+todosRouter.post("/todos/:userId", async (req, res) => {
+    const userId = req.params.userId;
+    const todoData = req.body;
 
-router.get('/todos/:id', (req, res) => {
-  const id = req.params.id;  // Grab the id parameter from the URL
-  res.send(`Getting TODO with id ${id}`);
+    const newTodo = new Todo({
+        user: userId,
+        ...todoData
+    });
+
+    const result = await Todo.create(newTodo);
+    return res.status(201).json(result);
 });
 
+todosRouter.put("/todos/:userId/:todoId", async (req, res) => {
+    const userId = req.params.userId;
+    const todoId = req.params.todoId;
+    const todo = req.body;
 
-router.post('/todos', (req, res) => {
-  const newTodo = {
-    id: 1,
-    title: 'Todo',
-    description: 'My todo'
-  };
-  res.json(newTodo);  // Send a response object as JSON
+
+    const update = await Todo.findOneAndUpdate({ user: userId, _id: todoId }, todo, { new: true });
+    return res.status(200).json(update);
 });
 
-// PUT to update a todo by id
-router.put('/todos/:id', (req, res) => {
-  const id = req.params.id;  // Grab the id parameter from the URL
-  res.send(`Updating TODO with id ${id}`);
+todosRouter.delete("/todos/:todoId", async (req, res) => {
+    const todoId = req.params.id
+
+    try {
+        const deletedTodo = await Todo.deleteOne(todoId);
+        if (!deletedTodo) {
+            return res.status(404).send("Todo not found")
+        }
+        res.status(200).send(`Todo with id ${todoId} has been deleted`)
+    } catch (error) {
+        res.status(404).send("Todo not found or invalid id.")
+    }
 });
 
-// DELETE a todo by id
-router.delete('/todos/:id', (req, res) => {
-  const id = req.params.id;  
-  res.send(`Deleting TODO with id ${id}`);
-});
-
-
-export default router;
+export default todosRouter;

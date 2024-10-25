@@ -1,11 +1,29 @@
-import express from 'express';
-import router from '/Users/Aksela/Documents/GitHub/todo-list-app/Server/Route/todos.js';  // Import the todos router
+import express from "express";
+import connect from "./database/mongodb-connect.js";
+
+import todosRouter from "./Route/todos.js";
+import usersRouter from "./Route/users.js";
 
 const app = express();
-const port = 3001;
 
-// Use the todos router with a '/api' prefix
-app.use('/api', router);
+const port = 4000;
+
+// Use body-parser middleware
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+
+// use the static middleware to serve static files
+app.use(express.static("public"));
+
+app.get("/", (req, res) => {
+  res.send("Hello Todo App!!!");
+});
+
+app.use("/api", todosRouter);
+app.use("/api", usersRouter);
+
+// attempt connection to mongodb
+connect();
 
 app.listen(port, () => {
   console.log(`Listening to port ${port}`);
