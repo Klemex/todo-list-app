@@ -1,30 +1,43 @@
 import express from "express";
-import connect from "./database/mongodb-connect.js";
-
 import todosRouter from "./Route/todos.js";
+import connect from "./database/mongodb-connect.js";
 import usersRouter from "./Route/users.js";
+import path from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
 
-const port = 4000;
+const port = 3000;
 
-// Use body-parser middleware
+// Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// use the static middleware to serve static files
-app.use(express.static("public"));
+// Serve static files
+app.use("/js", express.static(path.resolve(__dirname, "Route"))); 
+app.use(express.static(path.resolve(__dirname, "../frontend")));           
 
-app.get("/", (req, res) => {
-  res.send("Hello Todo App!!!");
-});
-
-app.use("/api", todosRouter);
+// API routes
 app.use("/api", usersRouter);
+app.use("/api", todosRouter);
 
-// attempt connection to mongodb
+// Database connection
 connect();
 
-app.listen(port, () => {
-  console.log(`Listening to port ${port}`);
+// SPA route handler: Send index.html for any unmatched route
+app.get("*", (req, res) => {
+  res.sendFile(path.resolve(__dirname, "../frontend", "index.html"));
 });
+
+app.listen(port, () => {
+  console.log(`Listening on port ${port}`);
+});
+
+
+
+
+
+
